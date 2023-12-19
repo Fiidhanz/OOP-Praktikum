@@ -7,10 +7,18 @@ package PRAKTIKUM_OOP;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.DefaultTableModel;
 import java.util.HashSet;
 import java.util.Set;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 
 /**
  *
@@ -31,6 +39,92 @@ public class komputer extends javax.swing.JFrame {
  rowCount = dataModel.getRowCount();
  }  
     }
+    public Connection conn;
+    public void koneksi() throws SQLException {
+        try {
+            conn = null;
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/OOP2218018?user=root&password=");
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(komputer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException e) {
+            Logger.getLogger(komputer.class.getName()).log(Level.SEVERE, null, e);
+        } catch (Exception es) {
+            Logger.getLogger(komputer.class.getName()).log(Level.SEVERE, null, es);
+        }
+    }
+public void tampil() {
+        DefaultTableModel tabelhead = new DefaultTableModel();
+        tabelhead.addColumn("ID");
+        tabelhead.addColumn("merk");
+        tabelhead.addColumn("jumlah");
+        tabelhead.addColumn("disewa");
+        try {
+            koneksi();
+            String sql = "SELECT * FROM tb_makananbeku";
+            Statement stat = conn.createStatement();
+            ResultSet res = stat.executeQuery(sql);
+            while (res.next()) {
+                tabelhead.addRow(new Object[]{res.getString(2), res.getString(3), res.getString(4), res.getString(5), res.getString(6), res.getString(7), res.getString(8), res.getString(9),});
+            }
+            tabel.setModel(tabelhead);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "BELUM TERKONEKSI");
+        }
+    }
+public void refresh() {
+        new komputer ().setVisible(true);
+        this.setVisible(false);
+    }
+public void insert() {
+        String id = idk.getText();
+        String merk = jen.getText();
+        String jumlah = jumkom.getText();
+        String sewa = sw.getText();
+        try {
+            koneksi();
+            Statement statement = conn.createStatement();
+            statement.executeUpdate("INSERT INTO tb_makananbeku (nama, harga,berat, produksi, jenis,alamat)"
+                    + "VALUES('" + id + "','" + merk + "','" + jumlah + "','" + sewa + "')");
+            statement.close();
+            JOptionPane.showMessageDialog(null, "Berhasil Memasukan Data Komputer!" + "\n" + id);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Terjadi Kesalahan Input!");
+        }
+        refresh();
+    }
+public void update() {
+        String id = idk.getText();
+        String merk = jen.getText();
+        String jumlah = jumkom.getText();
+        String sewa = sw.getText();
+        try {
+            Statement statement = conn.createStatement();
+            statement.executeUpdate("UPDATE data_komputer SET id='" + id + "','" + merk + "','" + jumlah + "','" + sewa + "')");
+            statement.close();
+            conn.close();
+            JOptionPane.showMessageDialog(null, "Update Data Makanan Berhasil!");
+        } catch (Exception e) {
+            System.out.println("Error : " + e);
+        }
+        refresh();
+    }
+public void delete() {
+        int ok = JOptionPane.showConfirmDialog(null, "Apakah Anda yakin akan menghapus data ?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
+        if (ok == 0) {
+            try {
+                String sql = "DELETE FROM tb_makananbeku WHERE nim='" + idk.getText() + "'";
+                java.sql.PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Data Berhasil di hapus");
+                batal();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Data gagal di hapus");
+            }
+        }
+        refresh();
+    }
+
      public void clear() {
  idk.setText("");
  sw.setText("");
@@ -62,6 +156,8 @@ public class komputer extends javax.swing.JFrame {
         close1 = new javax.swing.JToggleButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         tabel = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
+        batal = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -110,6 +206,20 @@ public class komputer extends javax.swing.JFrame {
         ));
         jScrollPane2.setViewportView(tabel);
 
+        jButton1.setText("update");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        batal.setText("batal");
+        batal.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                batalActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -138,12 +248,16 @@ public class komputer extends javax.swing.JFrame {
                 .addGap(145, 145, 145))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton1)
+                .addGap(35, 35, 35)
                 .addComponent(hapus)
-                .addGap(74, 74, 74)
+                .addGap(44, 44, 44)
                 .addComponent(button, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(54, 54, 54)
+                .addGap(39, 39, 39)
                 .addComponent(close1)
-                .addGap(187, 187, 187))
+                .addGap(34, 34, 34)
+                .addComponent(batal)
+                .addGap(88, 88, 88))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -173,7 +287,9 @@ public class komputer extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(button)
                     .addComponent(close1)
-                    .addComponent(hapus))
+                    .addComponent(hapus)
+                    .addComponent(jButton1)
+                    .addComponent(batal))
                 .addContainerGap(32, Short.MAX_VALUE))
         );
 
@@ -181,7 +297,7 @@ public class komputer extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void hapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hapusActionPerformed
-        // TODO add your handling code here:
+delete();        // TODO add your handling code here:
         DefaultTableModel dataModel = (DefaultTableModel) tabel.getModel();
         int rowCount = dataModel.getRowCount();
         while (rowCount > 0){
@@ -212,11 +328,20 @@ public class komputer extends javax.swing.JFrame {
         }else{
             JOptionPane.showMessageDialog(null, sewa.passcocok());
         }
+        insert();
     }//GEN-LAST:event_buttonActionPerformed
 
     private void close1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_close1ActionPerformed
         System.exit(0);
     }//GEN-LAST:event_close1ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+update();        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void batalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_batalActionPerformed
+batal();        // TODO add your handling code here:
+    }//GEN-LAST:event_batalActionPerformed
 
     /**
      * @param args the command line arguments
@@ -254,10 +379,12 @@ public class komputer extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton batal;
     private javax.swing.JToggleButton button;
     private javax.swing.JToggleButton close1;
     private javax.swing.JButton hapus;
     private javax.swing.JTextField idk;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -269,4 +396,8 @@ public class komputer extends javax.swing.JFrame {
     private javax.swing.JTextField sw;
     private javax.swing.JTable tabel;
     // End of variables declaration//GEN-END:variables
+
+    private void batal() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

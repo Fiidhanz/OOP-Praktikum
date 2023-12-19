@@ -6,11 +6,18 @@
 package PRAKTIKUM_OOP;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.DefaultTableModel;
 import java.util.HashSet;
 import java.util.Set;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 /**
  *
  * @author ASUS
@@ -30,9 +37,100 @@ public class Penyewa extends javax.swing.JFrame {
  rowCount = dataModel.getRowCount();
  }  
     }
+     public Connection conn;
+    public void koneksi() throws SQLException {
+        try {
+            conn = null;
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/OOP2218018?user=root&password=");
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Penyewa.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException e) {
+            Logger.getLogger(Penyewa.class.getName()).log(Level.SEVERE, null, e);
+        } catch (Exception es) {
+            Logger.getLogger(Penyewa.class.getName()).log(Level.SEVERE, null, es);
+        }
+    }
+public void tampil() {
+        DefaultTableModel tabelhead = new DefaultTableModel();
+        tabelhead.addColumn("Nama");
+        tabelhead.addColumn("alamat");
+        tabelhead.addColumn("nomor HP");
+        tabelhead.addColumn("Jam sewa");
+        tabelhead.addColumn("lama sewa");
+        tabelhead.addColumn("denda");
+        try {
+            koneksi();
+            String sql = "SELECT * FROM tb_makananbeku";
+            Statement stat = conn.createStatement();
+            ResultSet res = stat.executeQuery(sql);
+            while (res.next()) {
+                tabelhead.addRow(new Object[]{res.getString(2), res.getString(3), res.getString(4), res.getString(5), res.getString(6), res.getString(7), res.getString(8), res.getString(9),});
+            }
+            tabel.setModel(tabelhead);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "BELUM TERKONEKSI");
+        }
+    }
+public void refresh() {
+        new komputer ().setVisible(true);
+        this.setVisible(false);
+    }
+public void insert() {
+        String nm = nama.getText();
+        String alamat = almt.getText();
+        String nohp = hp.getText();
+        String jamsewa = jam.getText();
+        String durasi = lama.getText();
+        String denda = den.getText();
+        try {
+            koneksi();
+            Statement statement = conn.createStatement();
+            statement.executeUpdate("INSERT INTO tb_makananbeku (nama, harga,berat, produksi, jenis,alamat)"
+                    + "VALUES('" + nm + "','" + alamat + "','" + nohp + "','" + jamsewa + "','" + durasi + "','" + denda+ "')");
+            statement.close();
+            JOptionPane.showMessageDialog(null, "Berhasil Memasukan Data Penyewa!" + "\n" + nm);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Terjadi Kesalahan Input!");
+        }
+        refresh();
+    }
+public void update() {
+        String nm = nama.getText();
+        String alamat = almt.getText();
+        String nohp = hp.getText();
+        String jamsewa = jam.getText();
+        String durasi = lama.getText();
+        String denda = den.getText();
+        try {
+            Statement statement = conn.createStatement();
+            statement.executeUpdate("UPDATE data_peneyewa SET id='"  + nm + "','" + alamat + "','" + nohp + "','" + jamsewa + "','" + durasi + "','" + denda+ "')");
+            statement.close();
+            conn.close();
+            JOptionPane.showMessageDialog(null, "Update Data Makanan Berhasil!");
+        } catch (Exception e) {
+            System.out.println("Error : " + e);
+        }
+        refresh();
+    }
+public void delete() {
+        int ok = JOptionPane.showConfirmDialog(null, "Apakah Anda yakin akan menghapus data ?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
+        if (ok == 0) {
+            try {
+                String sql = "DELETE FROM tb_makananbeku WHERE nm='" + nama.getText() + "'";
+                java.sql.PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Data Berhasil di hapus");
+                batal();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Data gagal di hapus");
+            }
+        }
+        refresh();
+    }
        public void clear() {
  nama.setText("");
- alamat.setText("");
+ almt.setText("");
  hp.setText("");
  jam.setText("");
  lama.setText("");
@@ -50,7 +148,7 @@ public class Penyewa extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        alamat = new javax.swing.JTextField();
+        almt = new javax.swing.JTextField();
         pass = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         hp = new javax.swing.JTextField();
@@ -70,6 +168,8 @@ public class Penyewa extends javax.swing.JFrame {
         close1 = new javax.swing.JToggleButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         tabel = new javax.swing.JTable();
+        update = new javax.swing.JButton();
+        batal = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -124,6 +224,20 @@ public class Penyewa extends javax.swing.JFrame {
         ));
         jScrollPane2.setViewportView(tabel);
 
+        update.setText("update");
+        update.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateActionPerformed(evt);
+            }
+        });
+
+        batal.setText("batal");
+        batal.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                batalActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -133,41 +247,43 @@ public class Penyewa extends javax.swing.JFrame {
                 .addComponent(jLabel6)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGap(29, 29, 29)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel7)
-                                    .addComponent(jLabel8)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel4))
-                                .addGap(34, 34, 34)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(nama, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(alamat, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(hp, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jam, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(den)
-                                        .addComponent(lama, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(Password)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(pass, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 617, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel7)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4))
+                        .addGap(34, 34, 34)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(nama, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(almt, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(hp, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jam, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(den)
+                                .addComponent(lama, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Password)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pass, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(update)
+                        .addGap(67, 67, 67)
                         .addComponent(hapus)
-                        .addGap(74, 74, 74)
+                        .addGap(46, 46, 46)
                         .addComponent(button, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(54, 54, 54)
-                        .addComponent(close1)))
+                        .addGap(61, 61, 61)
+                        .addComponent(close1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(batal))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 617, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(29, 29, 29))
         );
         layout.setVerticalGroup(
@@ -183,7 +299,7 @@ public class Penyewa extends javax.swing.JFrame {
                             .addComponent(nama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(alamat, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(almt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel3))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -210,7 +326,9 @@ public class Penyewa extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(button)
                     .addComponent(close1)
-                    .addComponent(hapus))
+                    .addComponent(hapus)
+                    .addComponent(update)
+                    .addComponent(batal))
                 .addGap(33, 33, 33))
         );
 
@@ -218,7 +336,7 @@ public class Penyewa extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void hapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hapusActionPerformed
-        // TODO add your handling code here:
+delete();        // TODO add your handling code here:
         DefaultTableModel dataModel = (DefaultTableModel) tabel.getModel();
         int rowCount = dataModel.getRowCount();
         while (rowCount > 0){
@@ -228,13 +346,13 @@ public class Penyewa extends javax.swing.JFrame {
     }//GEN-LAST:event_hapusActionPerformed
 
     private void buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonActionPerformed
-
+insert();
         DefaultTableModel dataModel = (DefaultTableModel) tabel.getModel();
         List list = new ArrayList<>();
         datapenyewa sewa = new datapenyewa();
         sewa.inputuser=(pass.getText());
         sewa.nama(nama.getText());
-        sewa.alamat(alamat.getText());
+        sewa.alamat(almt.getText());
         sewa.nohp=(hp.getText());
         sewa.jamsewa=Double.parseDouble(jam.getText());
         sewa.durasi=(Double.parseDouble(lama.getText()));
@@ -259,6 +377,14 @@ JOptionPane.showMessageDialog(null, sewa.passcocok());
     private void close1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_close1ActionPerformed
         System.exit(0);
     }//GEN-LAST:event_close1ActionPerformed
+
+    private void updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateActionPerformed
+update();        // TODO add your handling code here:
+    }//GEN-LAST:event_updateActionPerformed
+
+    private void batalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_batalActionPerformed
+batal();        // TODO add your handling code here:
+    }//GEN-LAST:event_batalActionPerformed
 
     /**
      * @param args the command line arguments
@@ -297,7 +423,8 @@ JOptionPane.showMessageDialog(null, sewa.passcocok());
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Password;
-    private javax.swing.JTextField alamat;
+    private javax.swing.JTextField almt;
+    private javax.swing.JButton batal;
     private javax.swing.JToggleButton button;
     private javax.swing.JToggleButton close1;
     private javax.swing.JTextField den;
@@ -316,5 +443,10 @@ JOptionPane.showMessageDialog(null, sewa.passcocok());
     private javax.swing.JTextField nama;
     private javax.swing.JTextField pass;
     private javax.swing.JTable tabel;
+    private javax.swing.JButton update;
     // End of variables declaration//GEN-END:variables
+
+    private void batal() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

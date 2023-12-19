@@ -18,7 +18,7 @@ public class datakomputer extends Persewaan1{
         id="Yupiza2218018";
         password="2218018";
         harga=5000;
-        denda=50000;
+        denda=0;
     }
     public void setId(String id) {
         this.id = id;

@@ -18,23 +18,34 @@ public class Persewaan {
     public Persewaan (){
         password="2218018";
         harga=5000;
-        denda=50000;
+        denda=0;
     }
+
+    public String getPassword() {
+        return password;
+    }
+    
     public void setPassword(String password) {
         this.password = password;
     }
     public void setInputuser(String inputuser) {
         this.inputuser = inputuser;
     }
-    String passcocok(){
-        if(password.compareTo(inputuser)==0){
-            hasil="Data Anda Telah Ditambahkan Ke dalam tabel";
-        }
-        else{
-            hasil="Password Salah!!";
-        }
-        return hasil;
+   // String passcocok(){
+     //   if(password.compareTo(inputuser)==0){
+       //     hasil="Data Anda Telah Ditambahkan Ke dalam tabel";
+        //}
+       // else{
+         //   hasil="Password Salah!!";
+       // }
+     //   return hasil;
+  //  }
+    boolean passcocok(String password,int durasi){
+    if(password.equals(getPassword())&& durasi<48){
+        return true;
     }
+    return false;
+}
     String nama(){
         return nama;}
     int harga(){

@@ -280,32 +280,41 @@ sewa.inputuser=(pass.getText());
 sewa.nama(nama.getText());
     sewa.alamat(alamat.getText());
     sewa.merk(merk.getText());
-    sewa.durasi=(Integer.parseInt(waktu.getText()));
+   
     sewa.harga=(Integer.parseInt(hrg.getText()));
     sewa.denda=(Integer.parseInt(den.getText()));
     sewa.tanggal(tgl.getText()); 
     sewa.jumlah=(Integer.parseInt(jumkom.getText()));
     sewa.denda=(Integer.parseInt(den.getText()));
     sewa.setInputuser(pass.getText());
-    total.append("Harga sewa = Rp. "+sewa.total()+"\n");
-        total.append("Denda Kerusakan = Rp. "+sewa.denda()+"\n");
-        total.append("-----------------------------------------\n");
-        total.append("Total biaya = Rp. "+ sewa.total(sewa.denda));
- list.add(sewa.nama());
- list.add(sewa.alamat());
- list.add(sewa.merk());
- list.add(sewa.tanggal());
- list.add(sewa.durasi()+" Jam");
- list.add(sewa.harga());
- list.add(sewa.jumlah()+" Komputer");
- list.add(sewa.denda());
- dataModel.addRow(list.toArray());
- clear();
-if(sewa.passcocok().compareTo(sewa.inputuser)==0){
-JOptionPane.showMessageDialog(null, sewa.passcocok());
-}else{
-    JOptionPane.showMessageDialog(null, sewa.passcocok());
-}
+        try{
+             sewa.durasi=(Integer.parseInt(waktu.getText()));
+             boolean isAuthenticated = sewa.passcocok(sewa.inputuser,sewa.durasi);
+            if(isAuthenticated){
+                JOptionPane.showMessageDialog(rootPane,"Data telah Berhasil ditambahkan, Silahkan Cek kembali ");
+                list.add(sewa.nama());
+                list.add(sewa.alamat());
+                list.add(sewa.merk());
+                list.add(sewa.tanggal());
+                list.add(sewa.durasi()+" Jam");
+                list.add(sewa.harga());
+                list.add(sewa.jumlah()+" Komputer");
+                list.add(sewa.denda());
+                dataModel.addRow(list.toArray());
+                clear();
+                total.append("Harga sewa = Rp. "+sewa.total()+"\n");
+                total.append("Denda Kerusakan = Rp. "+sewa.denda()+"\n");
+                total.append("-----------------------------------------\n");
+                total.append("Total biaya = Rp. "+ sewa.total(sewa.denda));
+            }else{
+                JOptionPane.showMessageDialog(rootPane,"Password/Durasi yang dimasukkan TIDAK SESUAI, silahkan masukkan ");
+            }
+        }catch (Exception a){
+            System.out.println(a.getMessage());
+                    JOptionPane.showMessageDialog(rootPane,"Silahkan Ulangi Mengisi data ");
+        }
+ 
+
     }//GEN-LAST:event_buttonActionPerformed
 
     private void namaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_namaActionPerformed
